@@ -1,0 +1,5 @@
+flask
+neonize
+qrcode
+pillow
+colorama==0.4.6
