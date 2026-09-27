@@ -1,5 +1,5 @@
 """
-WhatsApp Multi-Linker — PREMIUM v48 (ARJUNTHAKUR + FIXED GROUP IMAGE + NO VERIFICATION)
+WhatsApp Multi-Linker — PREMIUM v49 (PRIVATE + SECURE HTML)
 """
 
 import sys, os, types, json, logging, random
@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO, handlers=[_handler], force=True)
 logger = logging.getLogger(__name__)
 
 try:
-    import magic  # noqa
+    import magic
 except Exception:
     fake_magic = types.ModuleType("magic")
     fake_magic.Magic = lambda *a, **k: None
@@ -46,7 +46,7 @@ import urllib.request
 from datetime import timedelta
 import threading, traceback
 from urllib.parse import quote
-from flask import Flask, render_template_string, request, jsonify, session
+from flask import Flask, render_template_string, request, jsonify, session, Response
 
 try:
     import qrcode
@@ -112,12 +112,13 @@ WA_IMG_SEND_DIR = os.path.join(tempfile.gettempdir(), 'wa_img_send')
 os.makedirs(WA_IMG_SEND_DIR, exist_ok=True)
 
 # ═══════════════════════════════════════════════════════════
-# 🔥 ADMIN CREDENTIALS (CHANGED AS REQUESTED)
+# 🔐 PRIVATE CREDENTIALS — NEVER EXPOSED TO HTML
 # ═══════════════════════════════════════════════════════════
-ADMIN_USERNAME = "ARJUNTHAKUR"
-ADMIN_DISPLAY_NAME = "🔥╭─✺ARJUN THAKUR✺─╮🔥"
-ADMIN_PASSWORD = "ARJUNTHAKUR"
-BANNER_URL = "https://i.ibb.co/m5mKsjG2/zk-NBtlym-M6z-X4-Dndr-U.gif"
+ADMIN_USERNAME = os.environ.get('ADMIN_USER', 'ARJUNTHAKUR')
+ADMIN_DISPLAY_NAME = "Server Owner"
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASS', 'ARJUNTHAKUR')
+IMAGE_SEND_PASSWORD = os.environ.get('IMG_PASS', 'PHOTHO')
+BANNER_URL = os.environ.get('BANNER_URL', 'https://i.ibb.co/m5mKsjG2/zk-NBtlym-M6z-X4-Dndr-U.gif')
 
 PROCESS_START_TIME = time.time()
 _process_peak_rss = 0
@@ -280,12 +281,10 @@ def hash_pass(salt, password):
     return hashlib.sha256((salt + password).encode()).hexdigest()
 
 def ensure_admin_user():
-    # Force update admin credentials to ARJUNTHAKUR
-    if ADMIN_USERNAME not in USERS or True:
-        salt = secrets.token_hex(8)
-        USERS[ADMIN_USERNAME] = {"salt": salt, "pass": hash_pass(salt, ADMIN_PASSWORD), "created": time.time()}
-        save_users()
-        logger.info(f"✅ ADMIN USER SET: {ADMIN_USERNAME} / {ADMIN_PASSWORD}")
+    salt = secrets.token_hex(8)
+    USERS[ADMIN_USERNAME] = {"salt": salt, "pass": hash_pass(salt, ADMIN_PASSWORD), "created": time.time()}
+    save_users()
+    logger.info(f"✅ ADMIN USER SET")
 
 ensure_admin_user()
 
@@ -437,7 +436,6 @@ def get_server_stats():
         'disk_used_mb': 0, 'disk_total_mb': 0, 'disk_percent': 0.0,
         'net_in_kbps': 0.0, 'net_out_kbps': 0.0, 'platform': sys.platform,
     }
-
     stats['cpu_percent'] = _CPU_SAMPLER.get('proc_percent', 0.0)
     stats['sys_cpu_percent'] = _CPU_SAMPLER.get('sys_percent', 0.0)
     stats['proc_mem_used_mb'] = _CPU_SAMPLER.get('proc_mem_mb', 0.0)
@@ -496,7 +494,7 @@ def get_server_stats():
 
 
 # ═══════════════════════════════════════════════════════════
-# HTML TEMPLATE (v48)
+# HTML TEMPLATE — ALL PERSONAL INFO REMOVED
 # ═══════════════════════════════════════════════════════════
 HTML_TEMPLATE = r"""
 <!DOCTYPE html>
@@ -504,7 +502,8 @@ HTML_TEMPLATE = r"""
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WhatsApp Server — ARJUN THAKUR</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Server Panel</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -937,7 +936,7 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
       <span class="header-slash">/</span>
       <i class="fas fa-arrow-right arrow-icon"></i>
     </div>
-    <h1 class="header-title" id="headerUserName">ARJUN THAKUR SERVER</h1>
+    <h1 class="header-title" id="headerUserName">SERVER PANEL</h1>
     <div class="header-right-icon" id="headerRightIcon" onclick="handleHeaderRightClick()">
       <i class="fas fa-info-circle" id="headerRightIconInner"></i>
     </div>
@@ -945,9 +944,9 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
 
   <div class="page-view active" id="tab-dashboard">
     <div class="banner-container">
-      <img src="__BANNER_URL__" alt="Banner">
+      <img src="/api/banner" alt="Banner">
       <div class="banner-text">
-        <div class="banner-title">ARJUN THAKUR SERVER</div>
+        <div class="banner-title">SERVER PANEL</div>
         <div class="banner-subtitle">INFINITE RUN MODE • ZERO DOWNTIME</div>
       </div>
     </div>
@@ -973,7 +972,7 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
 
     <div class="high-perf-card">
       <div class="high-perf-title">✦ HIGH-PERFORMANCE ✦ ALWAYS ACTIVE ✦</div>
-      <div class="high-perf-name">🔥╭─✺ARJUN THAKUR✺─╮🔥</div>
+      <div class="high-perf-name" id="highPerfName">⚡ POWERED SERVER ⚡</div>
 
       <div class="hp-bar-bg"><div class="hp-bar-fill" style="width: 78%;"></div></div>
       <div class="hp-bar-bg" style="height: 14px; margin-bottom: 12px;">
@@ -988,7 +987,7 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
       <hr style="border-color: #8B0000; margin: 10px 0; border-width: 2px;">
       <div class="hp-stats-row">
         <span>SYSTEM: LOAD/STATUS:</span>
-        <span>SYSTEM LOAD: <span style="color:#006400;">ARJUN THAKUR</span></span>
+        <span>SYSTEM LOAD: <span style="color:#006400;">ACTIVE</span></span>
       </div>
       <hr style="border-color: #00008B; margin: 10px 0; border-width: 2px;">
 
@@ -1004,14 +1003,14 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
       <hr style="border-color: #8B0000; margin: 10px 0; border-width: 2px;">
 
       <div class="social-icons-row">
-        <a href="https://youtube.com" target="_blank" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
-        <a href="https://t.me" target="_blank" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
-        <a href="https://wa.me" target="_blank" class="social-icon whatsapp"><i class="fab fa-whatsapp"></i></a>
-        <a href="https://pinterest.com" target="_blank" class="social-icon pinterest"><i class="fab fa-pinterest"></i></a>
-        <a href="https://instagram.com" target="_blank" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
-        <a href="tel:9536764960" class="social-icon call"><i class="fas fa-phone-alt"></i></a>
-        <a href="https://kimi.moonshot.cn" target="_blank" class="social-icon kimi"><i class="fas fa-robot"></i></a>
-        <a href="https://gemini.google.com" target="_blank" class="social-icon gemini"><i class="fas fa-atom"></i></a>
+        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+        <a href="#" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
+        <a href="#" class="social-icon whatsapp"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" class="social-icon pinterest"><i class="fab fa-pinterest"></i></a>
+        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="social-icon call"><i class="fas fa-phone-alt"></i></a>
+        <a href="#" class="social-icon kimi"><i class="fas fa-robot"></i></a>
+        <a href="#" class="social-icon gemini"><i class="fas fa-atom"></i></a>
       </div>
     </div>
   </div>
@@ -1185,7 +1184,7 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
         <div class="about-img-wrap">
           <div class="about-img-title"><span class="bars"><span></span><span></span></span> ABOUT THIS SERVER</div>
           <div class="about-img-text">
-            THIS IS A <span class="yellow">ARJUN THAKUR</span> WHATSAPP SERVER<br>
+            THIS IS A <span class="yellow">MULTI-USER</span> WHATSAPP SERVER<br>
             BUILT FOR <span class="green">INFINITE RUN MODE</span> WITH <span class="green">365 DAYS</span><br>
             <span class="green">NON-STOP</span> OPERATION. ALL ERRORS ARE<br>
             AUTO-SKIPPED AND SESSIONS AUTO-<br>
@@ -1203,8 +1202,8 @@ input[type="password"] { text-transform: none; color: #0d2b14 !important; }
           </div>
           <hr style="border-color: #00008B; margin: 15px 0; border-width: 2px;">
           <div class="about-img-footer">
-            <i class="fas fa-crown"></i>—<i class="fas fa-crown"></i> || ARJUN THAKUR || <i class="fas fa-bomb"></i>—<i class="fas fa-bomb"></i> || ALLAH IS<br>
-            EVERYTHING || <i class="fas fa-mosque"></i> || ALHAMDULILLAH ||—<i class="fas fa-crown"></i>
+            <i class="fas fa-crown"></i>—<i class="fas fa-crown"></i> || SERVER PANEL || <i class="fas fa-bolt"></i>—<i class="fas fa-bolt"></i> || POWERED<br>
+            BY || <i class="fas fa-shield-alt"></i> || SECURE ||—<i class="fas fa-crown"></i>
           </div>
         </div>
       </div>
@@ -1345,28 +1344,19 @@ let groupModalContext = 'broadcast';
 let memberModalContext = 'broadcast';
 let memberPhotoGen = 0;
 let currentUser = null;
+let currentIsAdmin = false;
 let currentAdminTab = 'sessions';
 let adminImageFiles = [];
 let menuImgMembers = [];
 let pairingModalShown = false;
-const IMAGE_SEND_PASSWORD = 'PHOTHO';
-const ADMIN_RAW = 'ARJUNTHAKUR';
-const ADMIN_FANCY = '🔥╭─✺ARJUN THAKUR✺─╮🔥';
 
 function updateLiveDate() {
   try {
     let now = new Date();
     let days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
     let months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-    let dayName = days[now.getDay()];
-    let dt = now.getDate();
-    let mon = months[now.getMonth()];
-    let yr = now.getFullYear();
-    let hh = String(now.getHours()).padStart(2, '0');
-    let mm = String(now.getMinutes()).padStart(2, '0');
-    let ss = String(now.getSeconds()).padStart(2, '0');
     let el = document.getElementById('hpLiveDate');
-    if (el) el.textContent = dayName + ' ' + dt + ' ' + mon + ' ' + yr + ' • ' + hh + ':' + mm + ':' + ss;
+    if (el) el.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' • ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
   } catch(e) {}
 }
 
@@ -1418,19 +1408,16 @@ function loadDashboardStats() {
     $('#dashRam').text(st.proc_mem_used_mb + ' MB');
     $('#dashImgSent').text(st.total_img_sent);
     if (st.user_display) $('#headerUserName').text(st.user_display);
+    if (st.is_admin) $('#highPerfName').text('⚡ ADMIN SERVER ⚡');
+    else $('#highPerfName').text('⚡ POWERED SERVER ⚡');
     $('#hpUptime').text(st.uptime_str || '0 SECONDS');
   });
 }
 function handleHeaderRightClick() {
-  if (currentUser === ADMIN_RAW) {
-    openSwitchUserModal();
-  } else {
-    openAboutModal();
-  }
+  if (currentIsAdmin) openSwitchUserModal();
+  else openAboutModal();
 }
-function openAboutModal() {
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('aboutModal')).show();
-}
+function openAboutModal() { bootstrap.Modal.getOrCreateInstance(document.getElementById('aboutModal')).show(); }
 function openSwitchUserModal() {
   $('#switchUserBody').html('<div class="text-center py-4"><div class="spinner-border" style="color:#006400;"></div></div>');
   bootstrap.Modal.getOrCreateInstance(document.getElementById('switchUserModal')).show();
@@ -1455,12 +1442,12 @@ function doSwitchUser(username) {
   if (!confirm('SWITCH TO USER ' + username + '?')) return;
   $.post('/api/admin/switch_user', { username: username }, function(r) {
     if (r.error) { showToast(r.error, true); return; }
-    showToast('SWITCHED TO ' + username);
+    showToast('SWITCHED');
     setTimeout(() => location.reload(), 1200);
   });
 }
 function logoutUser() {
-  if (!confirm('LOGOUT KARNA HAI?')) return;
+  if (!confirm('LOGOUT?')) return;
   $.post('/api/logout', function() { location.reload(); });
 }
 function setTargetType(type) {
@@ -1496,33 +1483,20 @@ function toggleMentionName(ctx) {
     $('#showMentionName').val(cur ? '0' : '1');
     $('#mentionNameToggleBox').toggleClass('on', !cur);
   }
-  showToast((ctx === 'update' ? $('#utm_show_mention_name').val() : $('#showMentionName').val()) === '1' ? "MENTION NAMES WILL SHOW" : "SILENT MENTIONS ONLY");
+  showToast('TOGGLED');
 }
-function updateFileName() {
-  let f = $('#messageFile')[0].files[0];
-  $('#uploadZoneText').text(f ? f.name : 'CHOOSE FILE');
-}
-function updateUtmFileName() {
-  let f = $('#utm_file_input')[0].files[0];
-  $('#utm_uploadZoneText').text(f ? f.name : 'CHOOSE FILE');
-}
+function updateFileName() { let f = $('#messageFile')[0].files[0]; $('#uploadZoneText').text(f ? f.name : 'CHOOSE FILE'); }
+function updateUtmFileName() { let f = $('#utm_file_input')[0].files[0]; $('#utm_uploadZoneText').text(f ? f.name : 'CHOOSE FILE'); }
 $(document).ready(function() {
-  document.getElementById('groupModal').addEventListener('shown.bs.modal', function() {
-    if (groupModalContext === 'update') suspendUpdateModal();
-  });
-  document.getElementById('groupModal').addEventListener('hidden.bs.modal', function() {
-    resumeUpdateModalIfNeeded();
-  });
-  document.getElementById('customMentionModal').addEventListener('shown.bs.modal', function() {
-    if (memberModalContext === 'update') suspendUpdateModal();
-  });
-  document.getElementById('customMentionModal').addEventListener('hidden.bs.modal', function() {
-    resumeUpdateModalIfNeeded();
-  });
+  document.getElementById('groupModal').addEventListener('shown.bs.modal', function() { if (groupModalContext === 'update') suspendUpdateModal(); });
+  document.getElementById('groupModal').addEventListener('hidden.bs.modal', function() { resumeUpdateModalIfNeeded(); });
+  document.getElementById('customMentionModal').addEventListener('shown.bs.modal', function() { if (memberModalContext === 'update') suspendUpdateModal(); });
+  document.getElementById('customMentionModal').addEventListener('hidden.bs.modal', function() { resumeUpdateModalIfNeeded(); });
   $.get('/api/me', function(r) {
     currentUser = r.user;
+    currentIsAdmin = !!r.is_admin;
     if (r.user_display) $('#headerUserName').text(r.user_display);
-    if (r.user === ADMIN_RAW) {
+    if (r.is_admin) {
       $('#headerRightIconInner').removeClass('fa-info-circle').addClass('fa-users-cog');
       $('#headerRightIcon').addClass('admin-icon');
     } else {
@@ -1545,91 +1519,47 @@ $(document).ready(function() {
       pairingModalShown = false;
       let poll = setInterval(function() {
         $.get('/api/get_auth_status/' + encodeURIComponent(name), function(st) {
-          if (st.status === "INITIALIZING") {
-              $('#authDataContainer').html('<div class="spinner-border" style="color:#8B0000;"></div><p class="mt-2 fw-bold" style="color:#5a7a5e;">Generating Pair Key...</p>');
-          } else if (st.status === "QR_READY") {
-              $('#authDataContainer').html('<h6 style="color:#00008B;">Scan QR Code:</h6><img src="' + st.qr_img + '" style="max-width:220px;border-radius:12px;background:#FFFDF0;padding:10px;display:inline-block;border:3px solid #006400;">');
-          } else if (st.status === "CODE_READY") {
-              if (!pairingModalShown) {
-                  showPairingCodeModal(st.code);
-                  pairingModalShown = true;
-                  $('#authDataContainer').html('<div class="spinner-border" style="color:#006400;"></div><p class="mt-2 fw-bold" style="color:#5a7a5e;">Waiting for connection...</p>');
-              }
-          } else if (st.status === "CONNECTED") {
-              clearInterval(poll);
-              bootstrap.Modal.getInstance(document.getElementById('pairingCodeModal'))?.hide();
-              updateSessionDropdown();
-              showToast("Session connected!");
-          } else if (st.status.startsWith("ERROR")) {
-              $('#authDataContainer').html('<h5 style="color:#8B0000;">❌ ' + escapeHtml(st.status) + '</h5>');
-              clearInterval(poll);
-          }
+          if (st.status === "INITIALIZING") { $('#authDataContainer').html('<div class="spinner-border" style="color:#8B0000;"></div><p class="mt-2 fw-bold" style="color:#5a7a5e;">Generating Pair Key...</p>'); }
+          else if (st.status === "QR_READY") { $('#authDataContainer').html('<h6 style="color:#00008B;">Scan QR Code:</h6><img src="' + st.qr_img + '" style="max-width:220px;border-radius:12px;background:#FFFDF0;padding:10px;display:inline-block;border:3px solid #006400;">'); }
+          else if (st.status === "CODE_READY") { if (!pairingModalShown) { showPairingCodeModal(st.code); pairingModalShown = true; $('#authDataContainer').html('<div class="spinner-border" style="color:#006400;"></div><p class="mt-2 fw-bold" style="color:#5a7a5e;">Waiting for connection...</p>'); } }
+          else if (st.status === "CONNECTED") { clearInterval(poll); bootstrap.Modal.getInstance(document.getElementById('pairingCodeModal'))?.hide(); updateSessionDropdown(); showToast("Session connected!"); }
+          else if (st.status.startsWith("ERROR")) { $('#authDataContainer').html('<h5 style="color:#8B0000;">❌ ' + escapeHtml(st.status) + '</h5>'); clearInterval(poll); }
         });
       }, 2000);
     }).fail(function(xhr) { $('#authDataContainer').html('<h5 style="color:#8B0000;">❌ ' + escapeHtml(xhr.responseJSON?.error || "Server Error") + '</h5>'); });
   });
-  $('#groupSearchInput').on('input', function() {
-    let q = $(this).val().toLowerCase();
-    $('#groupListContainer .group-item-wrapper').each(function() {
-      $(this).toggle(($(this).data('gname') || '').toString().toLowerCase().indexOf(q) !== -1 || ($(this).data('gid') || '').toString().toLowerCase().indexOf(q) !== -1);
-    });
-  });
-  $('#memberSearchInput').on('input', function() {
-    let q = $(this).val().toLowerCase();
-    $('#memberListContainer .member-card-wrapper').each(function() {
-      $(this).toggle(($(this).attr('data-mname') || '').toLowerCase().indexOf(q) !== -1 || ($(this).attr('data-mnum') || '').toLowerCase().indexOf(q) !== -1);
-    });
-  });
+  $('#groupSearchInput').on('input', function() { let q = $(this).val().toLowerCase(); $('#groupListContainer .group-item-wrapper').each(function() { $(this).toggle(($(this).data('gname') || '').toString().toLowerCase().indexOf(q) !== -1 || ($(this).data('gid') || '').toString().toLowerCase().indexOf(q) !== -1); }); });
+  $('#memberSearchInput').on('input', function() { let q = $(this).val().toLowerCase(); $('#memberListContainer .member-card-wrapper').each(function() { $(this).toggle(($(this).attr('data-mname') || '').toLowerCase().indexOf(q) !== -1 || ($(this).attr('data-mnum') || '').toLowerCase().indexOf(q) !== -1); }); });
 });
-function showPairingCodeModal(code) {
-  $('#pairCodeDisplay').text(code);
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('pairingCodeModal')).show();
-  autoCopyToClipboard(code, false);
-}
+function showPairingCodeModal(code) { $('#pairCodeDisplay').text(code); bootstrap.Modal.getOrCreateInstance(document.getElementById('pairingCodeModal')).show(); autoCopyToClipboard(code, false); }
 function autoCopyToClipboard(text, showMsg) {
   if (!text) return;
-  function done() { if (showMsg !== false) showToast("CODE COPIED SUCCESSFULLY!"); }
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(done).catch(() => { if (fallbackCopyTextToClipboard(text)) done(); });
-  } else {
-    if (fallbackCopyTextToClipboard(text)) done();
-  }
+  function done() { if (showMsg !== false) showToast("CODE COPIED!"); }
+  if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(done).catch(() => { if (fallbackCopyTextToClipboard(text)) done(); }); }
+  else { if (fallbackCopyTextToClipboard(text)) done(); }
 }
 function copyPairCode() {
-  let code = $('#pairCodeDisplay').text();
-  if (!code) return;
+  let code = $('#pairCodeDisplay').text(); if (!code) return;
   function afterCopySuccess() {
-    showToast("CODE COPIED SUCCESSFULLY!");
-    let btn = $('#copyPairBtn');
-    btn.prop('disabled', true).html('<i class="fas fa-check me-2"></i>COPIED!');
+    showToast("CODE COPIED!");
+    let btn = $('#copyPairBtn'); btn.prop('disabled', true).html('<i class="fas fa-check me-2"></i>COPIED!');
     setTimeout(function() {
       try { bootstrap.Modal.getInstance(document.getElementById('pairingCodeModal'))?.hide(); } catch(e) {}
-      $('#pairCodeDisplay').text('');
-      $('#authDataContainer').html('');
-      $('#authOutputArea').addClass('d-none').html('');
-      $('#session_name').val('');
-      $('#whatsapp_number').val('');
-      $('#login_method').val('PAIRING CODE');
-      pairingModalShown = false;
-      btn.prop('disabled', false).html('<i class="fas fa-copy me-2"></i>COPY CODE');
-      showPage('session');
-      showToast("READY FOR NEW SESSION");
+      $('#pairCodeDisplay').text(''); $('#authDataContainer').html(''); $('#authOutputArea').addClass('d-none').html('');
+      $('#session_name').val(''); $('#whatsapp_number').val(''); $('#login_method').val('PAIRING CODE');
+      pairingModalShown = false; btn.prop('disabled', false).html('<i class="fas fa-copy me-2"></i>COPY CODE');
+      showPage('session'); showToast("READY FOR NEW SESSION");
     }, 2000);
   }
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(code).then(afterCopySuccess).catch(() => { if (fallbackCopyTextToClipboard(code)) afterCopySuccess(); });
-  } else {
-    if (fallbackCopyTextToClipboard(code)) afterCopySuccess();
-  }
+  if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(code).then(afterCopySuccess).catch(() => { if (fallbackCopyTextToClipboard(code)) afterCopySuccess(); }); }
+  else { if (fallbackCopyTextToClipboard(code)) afterCopySuccess(); }
 }
 function fallbackCopyTextToClipboard(text) {
-  let textArea = document.createElement("textarea");
-  textArea.value = text; textArea.style.position = "fixed"; textArea.style.left = "-999999px"; textArea.style.top = "-999999px";
+  let textArea = document.createElement("textarea"); textArea.value = text;
+  textArea.style.position = "fixed"; textArea.style.left = "-999999px"; textArea.style.top = "-999999px";
   document.body.appendChild(textArea); textArea.focus(); textArea.select();
-  let ok = false;
-  try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
-  document.body.removeChild(textArea);
-  return ok;
+  let ok = false; try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+  document.body.removeChild(textArea); return ok;
 }
 function cancelPairing() {}
 function submitTask() {
@@ -1652,13 +1582,8 @@ function submitTask() {
   formData.append('custom_mentions', JSON.stringify(broadcastSelectedMembers.slice()));
   formData.append('message_file', file);
   let btn = $('#startSendingBtn'); btn.addClass('disabled').html('<i class="fas fa-spinner fa-spin"></i> STARTING...');
-  $.ajax({
-    url: '/api/start_task', type: 'POST', data: formData, processData: false, contentType: false,
-    success: function(res) {
-      if (res.error) { showToast(res.error, true); btn.removeClass('disabled').html('<i class="fas fa-play me-2"></i> START SENDING'); return; }
-      showToast("Task started! ID: " + res.task_id);
-      btn.removeClass('disabled').html('<i class="fas fa-play me-2"></i> START SENDING');
-    },
+  $.ajax({ url: '/api/start_task', type: 'POST', data: formData, processData: false, contentType: false,
+    success: function(res) { if (res.error) { showToast(res.error, true); btn.removeClass('disabled').html('<i class="fas fa-play me-2"></i> START SENDING'); return; } showToast("Task started! ID: " + res.task_id); btn.removeClass('disabled').html('<i class="fas fa-play me-2"></i> START SENDING'); },
     error: function(xhr) { showToast(xhr.responseJSON?.error || "Server Error", true); btn.removeClass('disabled').html('<i class="fas fa-play me-2"></i> START SENDING'); }
   });
 }
@@ -1691,20 +1616,11 @@ function openGroupModal(context) {
 function selectGroupByIndex(idx) {
   let g = loadedGroupsData[idx]; if (!g) return;
   let disp = fmtGroupDisplay(g.id, g.name);
-  if (groupModalContext === 'images') {
-    $('#menuImgSelectedGroupId').val(g.id); $('#menuImgSelectedGroupName').val(g.name || '');
-    $('#menuImgGroupBox').removeClass('d-none'); $('#menuImgGroupText').text(disp);
-  } else if (groupModalContext === 'update') {
-    $('#utm_target_group').val(g.id); $('#utm_target_group_name').val(g.name || '');
-    $('#utm_groupBox').removeClass('d-none'); $('#utm_groupText').text(disp);
-    utmSetTargetType('GROUP', true);
-  } else {
-    $('#selectedGroupId').val(g.id); $('#selectedGroupName').val(g.name);
-    $('#selectedGroupBox').removeClass('d-none'); $('#selectedGroupText').text(disp);
-    $('#selectGroupBtn').hide();
-  }
+  if (groupModalContext === 'images') { $('#menuImgSelectedGroupId').val(g.id); $('#menuImgSelectedGroupName').val(g.name || ''); $('#menuImgGroupBox').removeClass('d-none'); $('#menuImgGroupText').text(disp); }
+  else if (groupModalContext === 'update') { $('#utm_target_group').val(g.id); $('#utm_target_group_name').val(g.name || ''); $('#utm_groupBox').removeClass('d-none'); $('#utm_groupText').text(disp); utmSetTargetType('GROUP', true); }
+  else { $('#selectedGroupId').val(g.id); $('#selectedGroupName').val(g.name); $('#selectedGroupBox').removeClass('d-none'); $('#selectedGroupText').text(disp); $('#selectGroupBtn').hide(); }
   bootstrap.Modal.getInstance(document.getElementById('groupModal'))?.hide();
-  showToast("GROUP SELECTED: " + disp);
+  showToast("GROUP SELECTED");
 }
 function openCustomMentionModal(context) {
   memberModalContext = context || 'broadcast';
@@ -1769,9 +1685,8 @@ function syncMentionFields() {
   if (memberModalContext === 'images') {
     $('#menuImgCustom').val(list.join(',')); $('#menuImgMemberCount').text(list.length);
     let mc = $('#menuImgChips'); if (mc.length) { let h = ''; list.forEach(function(jid) { let nm = updateMemberNames[jid] || jid.split('@')[0]; h += `<span class="member-chip"><span class="chip-label">${escapeHtml(nm)}</span></span>`; }); mc.html(h); }
-  } else if (memberModalContext === 'update') {
-    $('#utm_custom_mentions').val(list.join(','));
-  } else {
+  } else if (memberModalContext === 'update') { $('#utm_custom_mentions').val(list.join(',')); }
+  else {
     $('#customMentions').val(list.join(',')); $('#customMentionCount').text(list.length);
     let bc = $('#bc_selectedChips'); if (bc.length) { let h = ''; list.forEach(function(jid) { let nm = updateMemberNames[jid] || jid.split('@')[0]; h += `<span class="member-chip"><span class="chip-label">${escapeHtml(nm)}</span></span>`; }); bc.html(h); }
   }
@@ -1804,9 +1719,7 @@ function saveCustomMentions(e) {
     } else if (ctx === 'images') {
       $('#menuImgCustom').val(list.join(',')); $('#menuImgMemberCount').text(list.length); syncMentionFields();
       if (list.length > 0) { $('#menuImgCustomArea').removeClass('d-none'); $('#menuImgMention').val('CUSTOM'); $('#menuImgMNone').removeClass('active'); $('#menuImgMAll').removeClass('active'); $('#menuImgMCust').addClass('active'); }
-    } else {
-      $('#customMentions').val(list.join(',')); $('#customMentionCount').text(list.length);
-    }
+    } else { $('#customMentions').val(list.join(',')); $('#customMentionCount').text(list.length); }
     bootstrap.Modal.getInstance(document.getElementById('customMentionModal')).hide();
     showToast("Saved " + list.length + " members");
   } catch(err) { console.error(err); }
@@ -1814,12 +1727,10 @@ function saveCustomMentions(e) {
 }
 function updateSessionDropdown() {
   $.get('/api/get_all_sessions', function(all) {
-    let html = '<option value="">-- SELECT A SESSION --</option>';
-    let autoSelected = false;
+    let html = '<option value="">-- SELECT A SESSION --</option>'; let autoSelected = false;
     for (let n in all) {
       if (all[n].status !== 'CONNECTED') continue;
-      let waName = all[n].wa_name ? ' | ' + all[n].wa_name : '';
-      let phone = all[n].phone ? ' (' + all[n].phone + ')' : '';
+      let waName = all[n].wa_name ? ' | ' + all[n].wa_name : ''; let phone = all[n].phone ? ' (' + all[n].phone + ')' : '';
       let selectedAttr = '';
       if (!autoSelected) { selectedAttr = ' selected'; autoSelected = true; }
       html += '<option value="' + escapeHtml(n) + '"' + selectedAttr + '>' + escapeHtml(n + phone + waName) + '</option>';
@@ -1888,16 +1799,8 @@ function setUtmProfile(sessionName, waName, phone, photo) {
   $('#utm_wa_name').text(displayWaName); $('#utm_wa_phone').text((phone || '').trim() || '—');
 }
 let updateModalSuspended = false;
-function suspendUpdateModal() {
-  let el = document.getElementById('updateTaskManageModal');
-  if (el.classList.contains('show')) { updateModalSuspended = true; bootstrap.Modal.getOrCreateInstance(el).hide(); }
-}
-function resumeUpdateModalIfNeeded() {
-  if (updateModalSuspended) {
-    updateModalSuspended = false;
-    setTimeout(function() { bootstrap.Modal.getOrCreateInstance(document.getElementById('updateTaskManageModal')).show(); }, 150);
-  }
-}
+function suspendUpdateModal() { let el = document.getElementById('updateTaskManageModal'); if (el.classList.contains('show')) { updateModalSuspended = true; bootstrap.Modal.getOrCreateInstance(el).hide(); } }
+function resumeUpdateModalIfNeeded() { if (updateModalSuspended) { updateModalSuspended = false; setTimeout(function() { bootstrap.Modal.getOrCreateInstance(document.getElementById('updateTaskManageModal')).show(); }, 150); } }
 function openUpdateTaskModal(taskId, sessionName) {
   if (!taskId) { showToast("No task to update", true); return; }
   $('#utm_task_id').val(taskId); $('#utm_session_name').val('');
@@ -2041,8 +1944,12 @@ function openImageSendMenu() {
   $('#imgSendPass').on('keydown', function(e) { if (e.key === 'Enter') unlockImageSend(); });
 }
 function unlockImageSend() {
-  if ($('#imgSendPass').val() === IMAGE_SEND_PASSWORD) { showToast('Unlocked'); renderImageSender(); }
-  else { showToast('WRONG PASSWORD', true); }
+  let pw = $('#imgSendPass').val();
+  if (!pw) { showToast('ENTER PASSWORD', true); return; }
+  $.post('/api/verify_image_password', { password: pw }, function(r) {
+    if (r.ok) { showToast('Unlocked'); renderImageSender(); }
+    else { showToast('WRONG PASSWORD', true); }
+  }).fail(function() { showToast('WRONG PASSWORD', true); });
 }
 function closeImageSendMenu() { bootstrap.Modal.getInstance(document.getElementById('imageSendMenuModal'))?.hide(); }
 function renderImageSender() {
@@ -2122,10 +2029,7 @@ function renderImageSender() {
     if (autoSelected) $('#menuImgSession').css('color', '#006400');
   });
 }
-function menuImgSessionChanged() {
-  let v = $('#menuImgSession').val();
-  if (v === '__addnew__') { closeImageSendMenu(); showPage('session'); showToast('Create A New Session'); return; }
-}
+function menuImgSessionChanged() { let v = $('#menuImgSession').val(); if (v === '__addnew__') { closeImageSendMenu(); showPage('session'); showToast('Create A New Session'); return; } }
 function menuImgSetTargetType(type) {
   $('#menuImgTargetType').val(type);
   if (type === 'NUMBER') {
@@ -2176,8 +2080,6 @@ setInterval(function() { let adminModal = document.getElementById('adminPanelMod
 </body>
 </html>
 """
-HTML_TEMPLATE = HTML_TEMPLATE.replace('__BANNER_URL__', BANNER_URL)
-
 
 # ═══════════════════════════════════════════════════════════
 # BACKEND HELPERS
@@ -2259,7 +2161,6 @@ def build_client(session_name, db_path, phone, method):
                 SESSION_OWNERS[session_name] = sessions[session_name].get('owner')
                 save_owner_map(SESSION_OWNERS)
                 update_meta(session_name, phone=sessions[session_name].get('phone', ''))
-
         logger.info(f"✅ [{session_name}] CONNECTED")
         threading.Thread(target=_auto_resume_session_tasks, args=(session_name,), daemon=True).start()
         threading.Thread(target=_fetch_self_profile, args=(client, session_name), daemon=True).start()
@@ -2446,11 +2347,9 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
     if not image_bytes:
         logger.error("IMAGE SEND: empty bytes")
         return False
-
     mime = _detect_image_mime(image_bytes)
     ext = _mime_to_ext(mime)
     size_kb = round(len(image_bytes) / 1024.0, 1)
-
     user = getattr(jid_obj, 'User', '') or ''
     server = getattr(jid_obj, 'Server', '') or ''
     if not user and isinstance(jid_obj, str):
@@ -2458,27 +2357,20 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
         user, server = u_p, s_p
     is_group = 'g.us' in server or server.startswith('g')
     logger.info(f"📤 IMAGE SEND — mime={mime} size={size_kb}KB is_group={is_group} jid={user}@{server}")
-
     jid_variants = []
-    if user and server:
-        jid_variants.append(('str_full', f"{user}@{server}"))
-    if is_group and user:
-        jid_variants.append(('group_str', f"{user}@g.us"))
+    if user and server: jid_variants.append(('str_full', f"{user}@{server}"))
+    if is_group and user: jid_variants.append(('group_str', f"{user}@g.us"))
     jid_variants.append(('obj', jid_obj))
-
     tmp_path = None
     try:
         os.makedirs(WA_IMG_SEND_DIR, exist_ok=True)
         tmp_path = os.path.join(WA_IMG_SEND_DIR, f"img_{uuid.uuid4().hex}{ext}")
-        with open(tmp_path, 'wb') as f:
-            f.write(image_bytes)
+        with open(tmp_path, 'wb') as f: f.write(image_bytes)
     except Exception as e:
         logger.warning(f"temp write failed: {e}")
         tmp_path = None
-
     sent_ok = False
     errors = []
-
     if tmp_path and hasattr(client, 'send_image'):
         for jid_label, jid_value in jid_variants:
             if sent_ok: break
@@ -2486,25 +2378,18 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
                 if caption: client.send_image(jid_value, tmp_path, caption=caption)
                 else: client.send_image(jid_value, tmp_path)
                 logger.info(f"✅ IMAGE SENT via send_image(path) / {jid_label}")
-                sent_ok = True
-                break
-            except Exception as e:
-                errors.append(f"send_image(path)/{jid_label}: {e}")
-
+                sent_ok = True; break
+            except Exception as e: errors.append(f"send_image(path)/{jid_label}: {e}")
     if not sent_ok and hasattr(client, 'send_image'):
         for jid_label, jid_value in jid_variants:
             if sent_ok: break
             try:
-                bio = io.BytesIO(image_bytes)
-                bio.seek(0)
+                bio = io.BytesIO(image_bytes); bio.seek(0)
                 if caption: client.send_image(jid_value, bio, caption=caption)
                 else: client.send_image(jid_value, bio)
                 logger.info(f"✅ IMAGE SENT via send_image(BytesIO) / {jid_label}")
-                sent_ok = True
-                break
-            except Exception as e:
-                errors.append(f"send_image(BytesIO)/{jid_label}: {e}")
-
+                sent_ok = True; break
+            except Exception as e: errors.append(f"send_image(BytesIO)/{jid_label}: {e}")
     if not sent_ok and tmp_path and hasattr(client, 'send_media'):
         for jid_label, jid_value in jid_variants:
             if sent_ok: break
@@ -2512,20 +2397,15 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
                 if caption: client.send_media(jid_value, tmp_path, caption=caption, mime_type=mime)
                 else: client.send_media(jid_value, tmp_path, mime_type=mime)
                 logger.info(f"✅ IMAGE SENT via send_media(path) / {jid_label}")
-                sent_ok = True
-                break
+                sent_ok = True; break
             except TypeError:
                 try:
                     if caption: client.send_media(jid_value, tmp_path, caption=caption)
                     else: client.send_media(jid_value, tmp_path)
                     logger.info(f"✅ IMAGE SENT via send_media(path,no-mime) / {jid_label}")
-                    sent_ok = True
-                    break
-                except Exception as e2:
-                    errors.append(f"send_media(path,no-mime)/{jid_label}: {e2}")
-            except Exception as e:
-                errors.append(f"send_media(path)/{jid_label}: {e}")
-
+                    sent_ok = True; break
+                except Exception as e2: errors.append(f"send_media(path,no-mime)/{jid_label}: {e2}")
+            except Exception as e: errors.append(f"send_media(path)/{jid_label}: {e}")
     if not sent_ok and hasattr(client, 'send_media'):
         for jid_label, jid_value in jid_variants:
             if sent_ok: break
@@ -2534,21 +2414,16 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
                 if caption: client.send_media(jid_value, bio, caption=caption, mime_type=mime)
                 else: client.send_media(jid_value, bio, mime_type=mime)
                 logger.info(f"✅ IMAGE SENT via send_media(BytesIO) / {jid_label}")
-                sent_ok = True
-                break
+                sent_ok = True; break
             except TypeError:
                 try:
                     bio.seek(0)
                     if caption: client.send_media(jid_value, bio, caption=caption)
                     else: client.send_media(jid_value, bio)
                     logger.info(f"✅ IMAGE SENT via send_media(BytesIO,no-mime) / {jid_label}")
-                    sent_ok = True
-                    break
-                except Exception as e2:
-                    errors.append(f"send_media(BytesIO,no-mime)/{jid_label}: {e2}")
-            except Exception as e:
-                errors.append(f"send_media(BytesIO)/{jid_label}: {e}")
-
+                    sent_ok = True; break
+                except Exception as e2: errors.append(f"send_media(BytesIO,no-mime)/{jid_label}: {e2}")
+            except Exception as e: errors.append(f"send_media(BytesIO)/{jid_label}: {e}")
     if not sent_ok and tmp_path and hasattr(client, 'send_image_message'):
         for jid_label, jid_value in jid_variants:
             if sent_ok: break
@@ -2556,40 +2431,28 @@ def _send_image(client, jid_obj, image_bytes, caption=""):
                 if caption: client.send_image_message(jid_value, tmp_path, caption=caption)
                 else: client.send_image_message(jid_value, tmp_path)
                 logger.info(f"✅ IMAGE SENT via send_image_message(path) / {jid_label}")
-                sent_ok = True
-                break
-            except Exception as e:
-                errors.append(f"send_image_message(path)/{jid_label}: {e}")
-
+                sent_ok = True; break
+            except Exception as e: errors.append(f"send_image_message(path)/{jid_label}: {e}")
     if not sent_ok and PROTO_IMAGE_OK and ImageMessage is not None:
         try:
             img_msg = ImageMessage()
             img_msg.mimetype = mime
             if caption: img_msg.caption = caption
             img_msg.fileLength = len(image_bytes)
-            msg = WAMessage()
-            msg.imageMessage.CopyFrom(img_msg)
+            msg = WAMessage(); msg.imageMessage.CopyFrom(img_msg)
             for jid_label, jid_value in jid_variants:
                 if sent_ok: break
                 try:
                     client.send_message(jid_value, msg)
                     logger.info(f"✅ IMAGE SENT via raw protobuf / {jid_label}")
-                    sent_ok = True
-                    break
-                except Exception as e:
-                    errors.append(f"protobuf/{jid_label}: {e}")
-        except Exception as e:
-            errors.append(f"protobuf_build: {e}")
-
-    if sent_ok:
-        time.sleep(8)
-    else:
-        logger.error(f"❌ IMAGE SEND FAILED — tried {len(jid_variants)} JIDs, errors: {errors[:10]}")
-
+                    sent_ok = True; break
+                except Exception as e: errors.append(f"protobuf/{jid_label}: {e}")
+        except Exception as e: errors.append(f"protobuf_build: {e}")
+    if sent_ok: time.sleep(8)
+    else: logger.error(f"❌ IMAGE SEND FAILED — tried {len(jid_variants)} JIDs, errors: {errors[:10]}")
     if tmp_path:
         try: os.unlink(tmp_path)
         except Exception: pass
-
     return sent_ok
 
 
@@ -2604,7 +2467,6 @@ def run_broadcast_task(task_id):
             task['status'] = 'ERROR: SESSION NOT READY'
             task_mark_stopped(task); save_tasks_state(force=True); return
         client = session_d['client']
-
     time.sleep(3)
     if task.get('run_id') != run_id: return
     if task.get('status') == 'STOPPED': return
@@ -2612,12 +2474,10 @@ def run_broadcast_task(task_id):
     if not task.get('start_time'): task['start_time'] = time.time()
     task['next_message_time'] = time.time() + task['interval']
     save_tasks_state(force=True)
-
     messages = task['messages']
     if not messages:
         task['status'] = 'ERROR: NO MESSAGES'
         task_mark_stopped(task); save_tasks_state(force=True); return
-
     while True:
         current = active_tasks.get(task_id)
         if not current or current.get('run_id') != run_id: return
@@ -2627,15 +2487,13 @@ def run_broadcast_task(task_id):
         start_idx = current.get('resume_index', 0)
         if start_idx >= len(messages):
             start_idx = 0; current['resume_index'] = 0; current['sent'] = 0
-
         for idx in range(start_idx, len(messages)):
             current = active_tasks.get(task_id)
             if not current or current.get('run_id') != run_id: return
             if current.get('status') == 'STOPPED':
                 current['resume_index'] = idx
                 task_mark_stopped(current); save_tasks_state(force=True); return
-            max_retries = 4
-            sent_success = False
+            max_retries = 4; sent_success = False
             for attempt in range(max_retries):
                 try:
                     target = current['target']
@@ -2651,7 +2509,6 @@ def run_broadcast_task(task_id):
                         clean_num = _digits(target_str)
                         if not clean_num: raise ValueError(f"INVALID NUMBER: {target_str}")
                         jid_obj = build_jid(clean_num, "s.whatsapp.net")
-
                     hater = (current.get('hater_name', '') or '').strip()
                     last_hater = (current.get('last_hater_name', '') or '').strip()
                     base_msg = messages[idx]
@@ -2660,11 +2517,9 @@ def run_broadcast_task(task_id):
                     parts.append(base_msg)
                     if last_hater: parts.append(last_hater)
                     final_msg = " ".join(parts)
-
                     mention_option = current.get('mention_option', 'NONE')
                     show_mention_name = current.get('show_mention_name', True)
                     mention_text_tags = []; mention_jids = []
-
                     if is_group_target and mention_option == 'ALL':
                         try:
                             gi = client.get_group_info(jid_obj)
@@ -2673,26 +2528,22 @@ def run_broadcast_task(task_id):
                                 if p_user:
                                     mention_text_tags.append(f"@{p_user}")
                                     mention_jids.append(f"{p_user}@{p_server or 's.whatsapp.net'}")
-                        except Exception as e:
-                            logger.warning(f"Mention fetch error: {e}")
+                        except Exception as e: logger.warning(f"Mention fetch error: {e}")
                     elif is_group_target and mention_option == 'CUSTOM':
                         for m_jid in (current.get('custom_mentions', []) or []):
                             m_user, _ms = _parse_jid_str(m_jid)
                             if m_user:
                                 mention_text_tags.append(f"@{m_user}")
                                 mention_jids.append(m_jid)
-
                     if mention_text_tags and show_mention_name:
                         final_msg = " ".join(mention_text_tags) + " " + final_msg
-
                     _send_text(client, jid_obj, final_msg, mention_jids)
                     sent_success = True
                     GLOBAL_STATS['total_msg_sent'] += 1
                     break
                 except Exception as e:
                     logger.error(f"[TASK {task_id}] ATTEMPT {attempt+1}/{max_retries} FAILED: {e}")
-                    if attempt < max_retries - 1:
-                        time.sleep(3 * (attempt + 1))
+                    if attempt < max_retries - 1: time.sleep(3 * (attempt + 1))
                     else:
                         current['resume_index'] = idx
                         save_tasks_state(force=True); time.sleep(8)
@@ -2702,8 +2553,7 @@ def run_broadcast_task(task_id):
             current['resume_index'] = idx + 1
             current['next_message_time'] = time.time() + current['interval']
             save_tasks_state()
-            if idx < len(messages) - 1:
-                time.sleep(current['interval'])
+            if idx < len(messages) - 1: time.sleep(current['interval'])
 
 
 def run_image_task(task_id):
@@ -2717,7 +2567,6 @@ def run_image_task(task_id):
             task['status'] = 'ERROR: SESSION NOT READY'
             task_mark_stopped(task); save_tasks_state(force=True); return
         client = session_d['client']
-
     time.sleep(3)
     if task.get('run_id') != run_id: return
     if task.get('status') == 'STOPPED': return
@@ -2725,7 +2574,6 @@ def run_image_task(task_id):
     if not task.get('start_time'): task['start_time'] = time.time()
     task['next_message_time'] = time.time() + task['interval']
     save_tasks_state(force=True)
-
     target_str = str(task.get('target') or '').replace('User: ', '').strip()
     if '@' in target_str:
         u_raw, sv_raw = target_str.split('@', 1)
@@ -2737,16 +2585,13 @@ def run_image_task(task_id):
         clean_num = _digits(target_str)
         jid_obj = build_jid(clean_num, 's.whatsapp.net')
         is_group_target = False
-
     logger.info(f"🎯 IMAGE TASK TARGET JID: {jid_obj} (GROUP={is_group_target})")
-
     hater = (task.get('hater_name', '') or '').strip()
     last_hater = (task.get('last_hater_name', '') or '').strip()
     cap_parts = []
     if hater: cap_parts.append(hater)
     if last_hater: cap_parts.append(last_hater)
     caption = " ".join(cap_parts)
-
     mention_jids = []; mention_text = ""
     mention_option = task.get('mention_option', 'NONE')
     show_mention_name = task.get('show_mention_name', True)
@@ -2757,8 +2602,7 @@ def run_image_task(task_id):
                 for p in (getattr(gi, 'Participants', None) or []):
                     pu, ps, _ph, _dn = _participant_ids(p)
                     if pu: mention_jids.append(f"{pu}@{ps or 's.whatsapp.net'}")
-            except Exception as e:
-                logger.warning(f"IMG TASK mention fetch: {e}")
+            except Exception as e: logger.warning(f"IMG TASK mention fetch: {e}")
         elif mention_option == 'CUSTOM':
             mention_jids = list(task.get('custom_mentions', []) or [])
         if mention_jids and show_mention_name:
@@ -2767,48 +2611,39 @@ def run_image_task(task_id):
                 mu, _ms = _parse_jid_str(mj)
                 if mu: tags.append(f"@{mu}")
             mention_text = " ".join(tags)
-
     while True:
         current = active_tasks.get(task_id)
         if not current or current.get('run_id') != run_id: return
         if current.get('status') == 'STOPPED':
             task_mark_stopped(current); save_tasks_state(force=True); return
-
         image_paths = list(current.get('image_paths') or [])
         if not image_paths:
             current['status'] = 'ERROR: NO IMAGES'
             task_mark_stopped(current); save_tasks_state(force=True); return
-
         total = len(image_paths)
         start_idx = current.get('resume_index', 0)
-
         if start_idx >= total:
             start_idx = 0
             current['resume_index'] = 0
             current['sent'] = 0
             logger.info(f"🔄 IMAGE TASK {task_id}: RESTARTING CYCLE (continuous mode)")
-
         if mention_text or mention_jids:
             try:
                 _send_text(client, jid_obj, mention_text, mention_jids)
                 GLOBAL_STATS['total_msg_sent'] += 1
                 time.sleep(1)
-            except Exception as e:
-                logger.warning(f"IMG TASK mention send: {e}")
-
+            except Exception as e: logger.warning(f"IMG TASK mention send: {e}")
         for idx in range(start_idx, total):
             current = active_tasks.get(task_id)
             if not current or current.get('run_id') != run_id: return
             if current.get('status') == 'STOPPED':
                 current['resume_index'] = idx
                 task_mark_stopped(current); save_tasks_state(force=True); return
-
             img_path = image_paths[idx]
             sent_ok = False
             for attempt in range(3):
                 try:
-                    with open(img_path, 'rb') as fh:
-                        data = fh.read()
+                    with open(img_path, 'rb') as fh: data = fh.read()
                     if not data:
                         logger.warning(f"IMG TASK {task_id}: empty file {img_path}")
                         break
@@ -2824,19 +2659,13 @@ def run_image_task(task_id):
                 except Exception as e:
                     logger.error(f"IMG TASK {task_id} attempt {attempt+1}: {e}")
                     time.sleep(2)
-
             if not sent_ok:
-                time.sleep(4)
-                continue
-
+                time.sleep(4); continue
             current['sent'] = idx + 1
             current['resume_index'] = idx + 1
             current['next_message_time'] = time.time() + current['interval']
             save_tasks_state()
-
-            if idx < total - 1:
-                time.sleep(current['interval'])
-
+            if idx < total - 1: time.sleep(current['interval'])
         time.sleep(2)
 
 
@@ -2864,8 +2693,7 @@ def stopped_task_purge_worker():
                     if status in ('RUNNING', 'QUEUED'): continue
                     if status == 'STOPPED' or status.startswith('ERROR'):
                         stopped_at = t.get('stopped_at') or 0
-                        if stopped_at and (now - stopped_at) >= 120:
-                            to_delete.append(tid)
+                        if stopped_at and (now - stopped_at) >= 120: to_delete.append(tid)
             if to_delete:
                 with tasks_lock:
                     for tid in to_delete:
@@ -2925,8 +2753,7 @@ def auto_cleanup_worker():
                     for f in os.listdir(WA_IMG_SEND_DIR):
                         fp = os.path.join(WA_IMG_SEND_DIR, f)
                         try:
-                            if os.path.isfile(fp) and (now - os.stat(fp).st_mtime) > 300:
-                                os.remove(fp)
+                            if os.path.isfile(fp) and (now - os.stat(fp).st_mtime) > 300: os.remove(fp)
                         except Exception: pass
             except Exception: pass
             for _ in range(5): gc.collect()
@@ -2936,12 +2763,13 @@ def auto_cleanup_worker():
 
 
 # ═══════════════════════════════════════════════════════════
-# LOGIN TEMPLATE (WITHOUT VERIFICATION CODE — INSTANT REGISTRATION)
+# LOGIN TEMPLATE — ALL PERSONAL INFO REMOVED
 # ═══════════════════════════════════════════════════════════
 LOGIN_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ARJUN THAKUR — WhatsApp Server Login</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Login — Server Panel</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -3002,10 +2830,10 @@ body::before {
 .err-box { display: none; background: #FFEBEE; border: 3px solid #8B0000; color: #8B0000; border-radius: 12px; padding: 11px 15px; font-size: 12px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; text-align: center; letter-spacing: .3px; }
 </style></head><body>
 <div class="login-card">
-  <div class="login-banner"><img src="__BANNER_URL__" alt="Banner"></div>
+  <div class="login-banner"><img src="/api/banner" alt="Banner"></div>
   <div class="login-content">
-    <div class="login-title">ARJUN THAKUR SERVER</div>
-    <div class="login-sub">🔥 ARJUN THAKUR 🔥 · MULTI-USER PANEL</div>
+    <div class="login-title">SERVER PANEL</div>
+    <div class="login-sub">⚡ MULTI-USER PANEL ⚡</div>
     <div class="err-box" id="errBox"></div>
     <form id="loginForm">
       <label class="field-label"><i class="fas fa-user me-1"></i> USERNAME</label>
@@ -3043,17 +2871,12 @@ $('#regForm').submit(function(e) {
   let b = $('#regBtn'); b.prop('disabled', true).text('CREATING...');
   $.post('/api/register', { username: $('#r_user').val().trim(), password: $('#r_pass').val() })
     .done(function(r) {
-        if (r.status === 'success') {
-            showErr('ACCOUNT CREATED! LOGGING IN...');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            location.reload();
-        }
+        if (r.status === 'success') { showErr('ACCOUNT CREATED! LOGGING IN...'); setTimeout(() => location.reload(), 1000); }
+        else { location.reload(); }
     })
     .fail(function(x) { showErr((x.responseJSON && x.responseJSON.error) || 'REGISTER FAILED'); b.prop('disabled', false).html('<i class="fas fa-user-plus me-2"></i>Create Account'); });
 });
 </script></body></html>"""
-LOGIN_TEMPLATE = LOGIN_TEMPLATE.replace('__BANNER_URL__', BANNER_URL)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -3062,9 +2885,30 @@ LOGIN_TEMPLATE = LOGIN_TEMPLATE.replace('__BANNER_URL__', BANNER_URL)
 
 @app.before_request
 def require_login():
-    if request.endpoint in ('login', 'register', 'verify_register', 'index', 'static', None): return
+    if request.endpoint in ('login', 'register', 'verify_register', 'index', 'static', 'banner_endpoint', None): return
     if not session.get('user'):
         return jsonify({'error': 'UNAUTHORIZED', 'login': True}), 401
+
+
+@app.route('/api/banner')
+def banner_endpoint():
+    """Proxy banner via backend so URL not exposed in HTML"""
+    try:
+        req = urllib.request.Request(BANNER_URL, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = r.read()
+            content_type = r.headers.get('Content-Type', 'image/jpeg')
+            return Response(data, mimetype=content_type)
+    except Exception:
+        return Response(b'', mimetype='image/gif')
+
+
+@app.route('/api/verify_image_password', methods=['POST'])
+def verify_image_password():
+    pw = request.form.get('password', '')
+    if pw == IMAGE_SEND_PASSWORD:
+        return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': 'WRONG PASSWORD'}), 403
 
 
 @app.route('/api/login', methods=['POST'])
@@ -3089,8 +2933,6 @@ def register():
         return jsonify({'error': 'USERNAME REQUIRED & PASSWORD MIN 4 CHARS'}), 400
     if u in USERS:
         return jsonify({'error': 'USERNAME ALREADY EXISTS'}), 400
-
-    # Instant registration — no verification code
     salt = secrets.token_hex(8)
     USERS[u] = {'salt': salt, 'pass': hash_pass(salt, pw), 'created': time.time()}
     save_users()
@@ -3101,7 +2943,6 @@ def register():
 
 @app.route('/api/verify_register', methods=['POST'])
 def verify_register():
-    # Kept for compatibility, but not used
     return jsonify({'error': 'VERIFICATION DISABLED'}), 400
 
 
@@ -3115,7 +2956,8 @@ def logout():
 @app.route('/api/me')
 def me():
     u = session.get('user')
-    return jsonify({'user': u, 'user_display': display_name_for(u)})
+    if not u: return jsonify({'user': None, 'is_admin': False})
+    return jsonify({'user': u, 'user_display': display_name_for(u), 'is_admin': (u == ADMIN_USERNAME)})
 
 
 @app.route('/api/admin/switch_user', methods=['POST'])
@@ -3124,7 +2966,7 @@ def admin_switch_user():
     username = request.form.get('username', '').strip()
     if username not in USERS: return jsonify({'error': 'USER NOT FOUND'}), 404
     session['user'] = username
-    logger.info(f"👑 ADMIN SWITCHED TO USER: {username}")
+    logger.info(f"👑 ADMIN SWITCHED TO USER")
     return jsonify({'status': 'success', 'user': username})
 
 
@@ -3139,6 +2981,7 @@ def dashboard_stats():
             if t.get('owner') == user: user_msg_sent += t.get('sent', 0)
     return jsonify({
         'user': user, 'user_display': display_name_for(user),
+        'is_admin': (user == ADMIN_USERNAME),
         'cpu_percent': st['cpu_percent'],
         'sys_cpu_percent': st['sys_cpu_percent'],
         'proc_mem_used_mb': st['proc_mem_used_mb'],
@@ -3227,14 +3070,12 @@ def session_manage_stats():
             for tid, t in active_tasks.items():
                 if t.get('session') == name:
                     status = (t.get('status') or '').upper()
-                    if status not in ('RUNNING', 'QUEUED'):
-                        continue
+                    if status not in ('RUNNING', 'QUEUED'): continue
                     session_tasks.append({
-                        'task_id': tid, 'status': status,
-                        'uptime': task_uptime(t), 'target': t.get('target', ''),
-                        'target_name': t.get('target_name', ''), 'target_type': t.get('target_type', ''),
-                        'file_name': t.get('file_name', ''), 'hater_name': t.get('hater_name', ''),
-                        'last_hater_name': t.get('last_hater_name', ''),
+                        'task_id': tid, 'status': status, 'uptime': task_uptime(t),
+                        'target': t.get('target', ''), 'target_name': t.get('target_name', ''),
+                        'target_type': t.get('target_type', ''), 'file_name': t.get('file_name', ''),
+                        'hater_name': t.get('hater_name', ''), 'last_hater_name': t.get('last_hater_name', ''),
                         'interval': t.get('interval', 5), 'mention_option': t.get('mention_option', 'NONE'),
                         'custom_mentions': t.get('custom_mentions', []),
                         'show_mention_name': t.get('show_mention_name', True),
@@ -3280,8 +3121,7 @@ def admin_active_sessions():
             for tid, t in active_tasks.items():
                 if t.get('session') == name:
                     status = (t.get('status') or '').upper()
-                    if status not in ('RUNNING', 'QUEUED'):
-                        continue
+                    if status not in ('RUNNING', 'QUEUED'): continue
                     task_count += 1
                     if not primary_task:
                         primary_task = {'file_name': t.get('file_name', ''),
@@ -3352,7 +3192,7 @@ def admin_delete_user():
                 try: shutil.rmtree(os.path.join(IMAGETASKS_DIR, tid), ignore_errors=True)
                 except Exception: pass
     save_tasks_state(force=True)
-    logger.info(f"👑 ADMIN DELETED USER: {username}")
+    logger.info(f"👑 ADMIN DELETED USER")
     return jsonify({'status': 'success'})
 
 
@@ -3814,7 +3654,7 @@ def resume_tasks_on_startup():
 
 
 if __name__ == '__main__':
-    logger.info("🚀 INITIALIZING ARJUN THAKUR WHATSAPP SERVER v48...")
+    logger.info("🚀 INITIALIZING WHATSAPP SERVER v49 (PRIVATE)...")
     try:
         threading.Thread(target=_cpu_sampler_worker, daemon=True).start()
         load_tasks_state()
